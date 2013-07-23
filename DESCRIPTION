@@ -1,0 +1,14 @@
+Package: timing
+Version: 0.1
+Title: Class and tools for timing measurements
+Description: Provides tools for conveniently manipulating and performing mathematical operations with timing variables (hrs, mins, secs)
+Author: Paul D. Baines <pdbaines@ucdavis.edu>
+Maintainer: Paul D. Baines <pdbaines@ucdavis.edu>
+Depends: 
+Imports:
+Suggests:
+LazyData: true
+LinkingTo: 
+License: GPL (>= 2)
+
+
