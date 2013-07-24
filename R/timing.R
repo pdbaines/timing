@@ -95,6 +95,31 @@ setClass("timing",
                    raw=NA_real_),
          validity=check_timing)
 
+#' Create an object of class \code{\link{timing}}, representing time measurements.
+#' 
+#' Create an object of class \code{\link{timing}} containing values in seconds, 
+#' minutes and hour from either an object of classes 'seconds',
+#' 'minutes', 'hours', or from a numeric vector representing time
+#' measurements in units specified by 'time.units'. 
+#' The \code{\link{timing}} represents hrs/min/sec and allows basic 
+#' operations such as adding times, computing minimum/maximum times, 
+#' summing times etc.
+#' 
+#' @param x either a vector of times in units specified by time.units,
+#' or, an object of class \code{\link{hours}}, \code{\link{minutes}} or
+#' \code{\link{seconds}}
+#' @param time.units if x is a numeric vector, then one of either
+#' "hours", "minutes" or "seconds"
+#' @value An object of class 'timing'
+#' @export
+#' @seealso \code{\link{timing}}
+#' @keywords timing
+#' @examples
+#' # Not run
+#' x <- seq(-1,2,by=0.5)
+#' y <- timing(x,time.units="hrs")
+#  x
+#' y
 "timing" <- function(x,time.units)
 {
   ##
@@ -228,6 +253,11 @@ setAs("hours", "timing",
 
 ###############################################################################
 
+setMethod("[","timing",
+  function(x,i){
+    return(timing(new("seconds",secs=x@raw[i])))
+  })
+
 setGeneric("mean")
 
 setMethod("mean","timing",
@@ -249,17 +279,75 @@ setMethod("quantile","timing",
             return(timing(quantile(x@raw,...),time.units="seconds"))
           })
 
-#setMethod("print", "timing", 
-#  function(x) {
-#  structure(list(x))
-#})
-#
-#setMethod("min", "timing",
-#  function(x,na.rm=FALSE){
-#    return(new(raw=min(x@raw,na.rm=na.rm)))
-#}
-#
-#"max.timing" <- function(x,na.rm=FALSE){
-#  return(convert(max(x@raw,na.rm=na.rm),from.units="sec"))
-#}
+setGeneric("print")
+
+setMethod("print", "timing", 
+  function(x) {
+    sign_vec <- ifelse(x@sign<0,"-","")
+    ret <- paste(sign_vec,x@hrs@hrs,":",
+                 sprintf("%02d",x@mins@mins),":",
+                 sprintf("%02g",x@secs@secs),sep="")
+    return(ret)
+  })
+
+setMethod("min", "timing",
+  function(x,na.rm=FALSE){
+    return(timing(x=min(x@raw,na.rm=na.rm),time.units="seconds"))
+})
+
+setMethod("max", "timing",
+  function(x,na.rm=FALSE){
+    return(timing(x=max(x@raw,na.rm=na.rm),time.units="seconds"))
+})
+
+setMethod("range", "timing",
+  function(x,na.rm=FALSE){
+    return(timing(x=c(min(x@raw,na.rm=na.rm),max(x@raw,na.rm=na.rm)),
+            time.units="seconds"))
+})
+
+setMethod("length","timing",
+  function(x){
+    return(length(x@raw))
+})
+
+setMethod("+", "timing",
+  function(e1,e2){
+    return(timing(x=(e1@raw+e2@raw),time.units="seconds"))
+})
+
+setMethod("-", "timing",
+  function(e1,e2){
+    return(timing(x=(e1@raw-e2@raw),time.units="seconds"))
+})
+
+setMethod(">", "timing",
+  function(e1,e2){
+    return(as.logical(e1@raw>e2@raw))
+})
+
+setMethod("<", "timing",
+  function(e1,e2){
+    return(as.logical(e1@raw<e2@raw))
+})
+
+setMethod(">=", "timing",
+  function(e1,e2){
+    return(as.logical(e1@raw>=e2@raw))
+})
+
+setMethod("<=", "timing",
+  function(e1,e2){
+    return(as.logical(e1@raw<=e2@raw))
+})
+
+setMethod("==", "timing",
+  function(e1,e2){
+    return(as.logical(e1@raw==e2@raw))
+})
+
+setMethod("!=", "timing",
+  function(e1,e2){
+    return(as.logical(e1@raw!=e2@raw))
+})
 
