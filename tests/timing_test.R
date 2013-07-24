@@ -78,7 +78,7 @@ length(hors2)
 
 mns2+hors2
 mns2-hors2
-scs2+hors2 # warning
+#scs2+hors2 # warning
 
 mns2 > hors2
 hors2 == hors2
@@ -88,4 +88,11 @@ print(sum(mns2))
 
 print(foo2)
 print(sum(foo2))
+
+concat(mns2,scs2)
+
+summary(mns2)
+summary(concat(scs2,mns2+hors2))
+
+
 

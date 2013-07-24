@@ -70,21 +70,39 @@
   return(TRUE)
 }
 
+#' @exportClass
 setClass("seconds",
          representation(secs="numeric"),
          prototype(secs=NA_real_),
          validity=check_seconds)
 
+#' @exportClass
 setClass("minutes",
          representation(mins="numeric"),
          prototype(mins=NA_real_),
          validity=check_minutes)
 
+#' @exportClass
 setClass("hours",
          representation(hrs="numeric"),
          prototype(hrs=NA_real_),
          validity=check_hours)
 
+#' Class \code{\link{timing}}, for representing time measurements.
+#' 
+#' Objects of class \code{\link{timing}} contain values in seconds, 
+#' minutes and hours representing durations. The class supports
+#' most basic operations such as addition, subtraction (not 
+#' multiplication and division), computing summaries such as min,
+#' max, quantiles, mean and median.
+
+#' The function \code{\link{timing}} is recommend to be used to 
+#' create objects of the class, not the function \code{\link{new}}.
+#' 
+#' @value An object of class 'timing'
+#' @exportClass
+#' @seealso \code{\link{timing}}
+#' @keywords timing
 setClass("timing",
          representation(hrs="hours",mins="minutes",secs="seconds",
                         sign="numeric",raw="numeric"),
@@ -253,11 +271,46 @@ setAs("hours", "timing",
 
 ###############################################################################
 
+#' @export
+setGeneric("concat",function(a,b){standardGeneric("concat")})
+
+#' @exportMethod
+setMethod("concat","timing",
+  function(a,b){
+    return(timing(c(a@raw,b@raw),time.units="seconds"))
+})
+
+# #' @exportMethod
+# setGeneric("c")
+# 
+# setMethod("c","timing",
+#   function(x,...){
+#     mc <- as.list(match.call(expand.dots=TRUE))
+#     ret <- timing(numeric(0),time.units="seconds")
+#     if (length(mc)<2){
+#       return(ret)
+#     } else {
+#       for (i in 2:length(mc)){
+#         if (class(mc[i])!="timing"){
+#           cat("mc:\n")
+#           for (j in 1:length(mc)){
+#             print(mc[j])
+#           }
+#           stop(paste("Unable to concatenate non-timing objects (class = ",
+#                      class(mc[i]),")",sep=""))
+#         }
+#         ret <- timing(c(ret@raw,mc[i]@raw),time.units="seconds")
+#       }
+#     }
+#     return(ret)
+# })
+
 setMethod("[","timing",
   function(x,i){
     return(timing(new("seconds",secs=x@raw[i])))
   })
 
+#' @exportMethod
 setGeneric("mean")
 
 setMethod("mean","timing",
@@ -265,6 +318,7 @@ setMethod("mean","timing",
     return(timing(mean(x@raw,...),time.units="seconds"))
   })
 
+#' @exportMethod
 setGeneric("median")
 
 setMethod("median","timing",
@@ -272,6 +326,7 @@ setMethod("median","timing",
             return(timing(median(x@raw,na.rm=na.rm),time.units="seconds"))
           })
 
+#' @exportMethod
 setGeneric("quantile")
 
 setMethod("quantile","timing",
@@ -279,16 +334,26 @@ setMethod("quantile","timing",
             return(timing(quantile(x@raw,...),time.units="seconds"))
           })
 
-setGeneric("print")
+#' @exportMethod
+setGeneric("format")
 
-setMethod("print", "timing", 
+setMethod("format", "timing", 
   function(x) {
     sign_vec <- ifelse(x@sign<0,"-","")
     ret <- paste(sign_vec,x@hrs@hrs,":",
                  sprintf("%02d",x@mins@mins),":",
                  sprintf("%02g",x@secs@secs),sep="")
     return(ret)
-  })
+})
+
+#' @exportMethod
+setGeneric("print")
+
+setMethod("print", "timing", 
+  function(x) {
+    print(format(x))
+    return(ret)
+})
 
 setMethod("min", "timing",
   function(x,na.rm=FALSE){
@@ -298,6 +363,17 @@ setMethod("min", "timing",
 setMethod("max", "timing",
   function(x,na.rm=FALSE){
     return(timing(x=max(x@raw,na.rm=na.rm),time.units="seconds"))
+})
+
+#' @exportMethod
+setGeneric("summary")
+setMethod("summary", "timing",
+  function(object,...){
+    qs <- quantile(object,...)
+    ms <- mean(object,...)
+    qsm <- format(concat(concat(qs[1:3],ms),qs[4:5]))
+    names(qsm) <- c("Min.","1st Qu.","Median","Mean","3rd Qu.","Max")
+    return(qsm)
 })
 
 setMethod("range", "timing",
