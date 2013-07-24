@@ -84,3 +84,8 @@ mns2 > hors2
 hors2 == hors2
 mns2 == (mns2+hors2-hors2)
 
+print(sum(mns2))
+
+print(foo2)
+print(sum(foo2))
+
