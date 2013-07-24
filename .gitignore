@@ -35,3 +35,4 @@ inst/sampleKernels/dnorm.ptx
 sizeofs
 checkSDKVersion
 Web/index.html
+.Rproj.user
