@@ -311,6 +311,11 @@ setMethod("length","timing",
     return(length(x@raw))
 })
 
+setMethod("sum", "timing",
+  function(x,na.rm=FALSE){
+    return(timing(x=sum(x@raw,na.rm=na.rm),time.units="seconds"))
+})
+
 setMethod("+", "timing",
   function(e1,e2){
     return(timing(x=(e1@raw+e2@raw),time.units="seconds"))
