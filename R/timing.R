@@ -1,4 +1,6 @@
+#' @docType package
 
+#' @export "check_timing"
 "check_timing" <- function(object) {
   if (FALSE){
     cat("hrs:\n") ; print(object@hrs)
@@ -21,16 +23,16 @@
   # Convert to seconds for the check:
   raw_chk <- object@sign*(object@secs@secs + object@mins@mins*60 + object@hrs@hrs*3600)
   
+  # Check for NA-to-non-NA pairs:
   if (any(is.na(raw_chk) & !is.na(object@raw)) ||
       any(!is.na(raw_chk) & is.na(object@raw))){
     # one NA, one none -- error
     msg <- "'raw' does not match value computed from 'hrs', 'mins' and 'secs' (one is NA)"
     errors <- c(errors,msg)
-  }
-  # TODO: add work for partial NA's
-  if (all(!is.na(raw_chk)) && all(!is.na(object@raw))){
+  } else {
+    # All non-NA's:
     tol <- 1e-8 # seems reasonable...
-    if (any(abs(raw_chk-object@raw)>tol)){
+    if (any(abs(raw_chk-object@raw)>tol,na.rm=TRUE)){
       if (TRUE){
         cat("raw_chk:\n") ; print(raw_chk)
         cat("object@raw:\n") ; print(object@raw)
@@ -39,6 +41,23 @@
       msg <- "all 'raw' values must match value computed from 'hrs', 'mins' and 'secs'"
       errors <- c(errors,msg)
     }
+  }
+  # Bounds checks:
+  if (any((object@secs@secs>=60 | object@secs@secs<0),na.rm=TRUE)){
+      msg <- "Value for 'secs' out of bounds"
+      errors <- c(errors,msg)
+  }
+  if (any((object@mins@mins>=60 | object@mins@mins<0),na.rm=TRUE)){
+      msg <- "Value for 'mins' out of bounds"
+      errors <- c(errors,msg)
+  }
+  if (any(abs(object@mins@mins-as.integer(object@mins@mins))>=.Machine$double.eps,na.rm=TRUE)){
+      msg <- "Non-integer value for 'mins' not allowed"
+      errors <- c(errors,msg)
+  }
+  if (any(abs(object@hrs@hrs-as.integer(object@hrs@hrs))>=.Machine$double.eps,na.rm=TRUE)){
+      msg <- "Non-integer value for 'hrs' not allowed"
+      errors <- c(errors,msg)
   }
   if (length(errors) == 0){
     return(TRUE)
@@ -70,39 +89,25 @@
   return(TRUE)
 }
 
-#' @exportClass
+#' @exportClass "seconds"
 setClass("seconds",
          representation(secs="numeric"),
          prototype(secs=NA_real_),
          validity=check_seconds)
 
-#' @exportClass
+#' @exportClass "minutes"
 setClass("minutes",
          representation(mins="numeric"),
          prototype(mins=NA_real_),
          validity=check_minutes)
 
-#' @exportClass
+#' @exportClass "hours"
 setClass("hours",
          representation(hrs="numeric"),
          prototype(hrs=NA_real_),
          validity=check_hours)
 
-#' Class \code{\link{timing}}, for representing time measurements.
-#' 
-#' Objects of class \code{\link{timing}} contain values in seconds, 
-#' minutes and hours representing durations. The class supports
-#' most basic operations such as addition, subtraction (not 
-#' multiplication and division), computing summaries such as min,
-#' max, quantiles, mean and median.
-
-#' The function \code{\link{timing}} is recommend to be used to 
-#' create objects of the class, not the function \code{\link{new}}.
-#' 
-#' @value An object of class 'timing'
-#' @exportClass
-#' @seealso \code{\link{timing}}
-#' @keywords timing
+#' @exportClass "timing"
 setClass("timing",
          representation(hrs="hours",mins="minutes",secs="seconds",
                         sign="numeric",raw="numeric"),
@@ -113,13 +118,16 @@ setClass("timing",
                    raw=NA_real_),
          validity=check_timing)
 
-#' Create an object of class \code{\link{timing}}, representing time measurements.
+#' Class for representing measurements of time (durations).
 #' 
-#' Create an object of class \code{\link{timing}} containing values in seconds, 
-#' minutes and hour from either an object of classes 'seconds',
-#' 'minutes', 'hours', or from a numeric vector representing time
+#' The function \code{\link{timing}} creates an object of class
+#'\code{\link{timing}} representing measurements of time with values in seconds, 
+#' minutes and hours. The object can be constructed from either an
+#' object of classes 'seconds', 'minutes', 'hours', or from a numeric 
+#' vector representing time
 #' measurements in units specified by 'time.units'. 
-#' The \code{\link{timing}} represents hrs/min/sec and allows basic 
+#' The \code{\link{timing}} class 
+#' represents hrs/min/sec and allows basic 
 #' operations such as adding times, computing minimum/maximum times, 
 #' summing times etc.
 #' 
@@ -128,8 +136,8 @@ setClass("timing",
 #' \code{\link{seconds}}
 #' @param time.units if x is a numeric vector, then one of either
 #' "hours", "minutes" or "seconds"
-#' @value An object of class 'timing'
-#' @export
+#' @return An object of class 'timing'
+#' @export "timing"
 #' @seealso \code{\link{timing}}
 #' @keywords timing
 #' @examples
@@ -138,6 +146,8 @@ setClass("timing",
 #' y <- timing(x,time.units="hrs")
 #  x
 #' y
+#' median(y)
+#' summary(y)
 "timing" <- function(x,time.units)
 {
   ##
@@ -178,26 +188,6 @@ setClass("timing",
 # standardGeneric :: dispatches the appropriate method for an object
 #           setAs :: object conversion
 #      initialize :: called after creation with prototype (for checking etc)
-#
-# Need:
-#
-# initialization from @raw
-# 
-#
-# for timing class:
-#
-# -- element-access
-# -- min
-# -- max
-# -- "+"
-# -- "-"
-# -- "mean"
-# -- "median"
-# -- "quantile"
-# -- "summary"
-# -- "sum"
-# -- "range"
-#
 #
 ###############################################################################
 
@@ -271,46 +261,21 @@ setAs("hours", "timing",
 
 ###############################################################################
 
-#' @export
+#' @export "concat"
 setGeneric("concat",function(a,b){standardGeneric("concat")})
 
-#' @exportMethod
+#' @exportMethod "concat"
 setMethod("concat","timing",
   function(a,b){
     return(timing(c(a@raw,b@raw),time.units="seconds"))
 })
-
-# #' @exportMethod
-# setGeneric("c")
-# 
-# setMethod("c","timing",
-#   function(x,...){
-#     mc <- as.list(match.call(expand.dots=TRUE))
-#     ret <- timing(numeric(0),time.units="seconds")
-#     if (length(mc)<2){
-#       return(ret)
-#     } else {
-#       for (i in 2:length(mc)){
-#         if (class(mc[i])!="timing"){
-#           cat("mc:\n")
-#           for (j in 1:length(mc)){
-#             print(mc[j])
-#           }
-#           stop(paste("Unable to concatenate non-timing objects (class = ",
-#                      class(mc[i]),")",sep=""))
-#         }
-#         ret <- timing(c(ret@raw,mc[i]@raw),time.units="seconds")
-#       }
-#     }
-#     return(ret)
-# })
 
 setMethod("[","timing",
   function(x,i){
     return(timing(new("seconds",secs=x@raw[i])))
   })
 
-#' @exportMethod
+#' @exportMethod "mean"
 setGeneric("mean")
 
 setMethod("mean","timing",
@@ -318,7 +283,7 @@ setMethod("mean","timing",
     return(timing(mean(x@raw,...),time.units="seconds"))
   })
 
-#' @exportMethod
+#' @exportMethod "median"
 setGeneric("median")
 
 setMethod("median","timing",
@@ -326,7 +291,7 @@ setMethod("median","timing",
             return(timing(median(x@raw,na.rm=na.rm),time.units="seconds"))
           })
 
-#' @exportMethod
+#' @exportMethod "quantile"
 setGeneric("quantile")
 
 setMethod("quantile","timing",
@@ -334,7 +299,7 @@ setMethod("quantile","timing",
             return(timing(quantile(x@raw,...),time.units="seconds"))
           })
 
-#' @exportMethod
+#' @exportMethod "format"
 setGeneric("format")
 
 setMethod("format", "timing", 
@@ -342,17 +307,16 @@ setMethod("format", "timing",
     sign_vec <- ifelse(x@sign<0,"-","")
     ret <- paste(sign_vec,x@hrs@hrs,":",
                  sprintf("%02d",x@mins@mins),":",
-                 sprintf("%02g",x@secs@secs),sep="")
+                 sprintf("%05.2f",x@secs@secs),sep="")
     return(ret)
 })
 
-#' @exportMethod
+#' @exportMethod "print"
 setGeneric("print")
 
 setMethod("print", "timing", 
   function(x) {
     print(format(x))
-    return(ret)
 })
 
 setMethod("min", "timing",
@@ -365,7 +329,7 @@ setMethod("max", "timing",
     return(timing(x=max(x@raw,na.rm=na.rm),time.units="seconds"))
 })
 
-#' @exportMethod
+#' @exportMethod "summary"
 setGeneric("summary")
 setMethod("summary", "timing",
   function(object,...){

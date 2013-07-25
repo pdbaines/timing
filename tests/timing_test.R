@@ -1,5 +1,6 @@
 
 # Testing of 'timing' class:
+rm(list=ls())
 
 foo <- new("timing", 
            hrs=new("hours",hrs=10), 
@@ -9,13 +10,47 @@ foo <- new("timing",
            raw=c(10*3600 + 12*60 + 50))
 print(foo)
 
+# non-integer seconds:
+goo <- new("timing", 
+           hrs=new("hours",hrs=10), 
+           mins=new("minutes",mins=12),
+           secs=new("seconds",secs=50.2),
+           sign=1.0,
+           raw=c(10*3600 + 12*60 + 50.2)) 
+print(goo)
+
 if (FALSE){
+# gives error since values do not match
 foo <- new("timing", 
            hrs=new("hours",hrs=10), 
            mins=new("minutes",mins=12),
            secs=new("seconds",secs=50),
            sign=1.0,
-           raw=c(10*3600 + 12*60 + 52)) # gives error
+           raw=c(10*3600 + 12*60 + 52)) 
+
+# gives error for non-integer values of hrs or mins:
+foo <- new("timing", 
+           hrs=new("hours",hrs=10.5), 
+           mins=new("minutes",mins=12),
+           secs=new("seconds",secs=50),
+           sign=1.0,
+           raw=c(10.5*3600 + 12*60 + 50)) 
+
+# gives error for out-of-bounds mins or secs:
+foo <- new("timing", 
+           hrs=new("hours",hrs=10), 
+           mins=new("minutes",mins=60),
+           secs=new("seconds",secs=50),
+           sign=1.0,
+           raw=c(10*3600 + 60*60 + 50)) 
+
+# gives error for out-of-bounds mins or secs:
+foo <- new("timing", 
+           hrs=new("hours",hrs=10), 
+           mins=new("minutes",mins=10),
+           secs=new("seconds",secs=100),
+           sign=1.0,
+           raw=c(10*3600 + 10*60 + 100)) 
 }
 
 foo_vec <- seq(0,10,by=0.25)
