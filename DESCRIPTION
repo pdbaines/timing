@@ -7,11 +7,7 @@ Author: Paul D. Baines <pdbaines@ucdavis.edu>
 Maintainer: Paul D. Baines <pdbaines@ucdavis.edu>
 Depends:
     methods
-Imports:
-Suggests:
-LazyData: NA
-LinkingTo: NA
-License: NA
+License: BSD
 Collate:
     'timing.R'
     'zzz.R'

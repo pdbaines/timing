@@ -1,14 +1,10 @@
-
-".onLoad" <- function(libname, pkgname) {
-  ## figure out this year automatically 
-  this.year <- substr(as.character(Sys.Date( )), 1, 4)
-  
-  ## echo output to screen
-  packageStartupMessage("##\n## timing\n")
-  packageStartupMessage("## Copyright 2013-", this.year, " Paul Baines\n\n", sep="")
-}
-
-
-
-
+#' Class and tools for timing measurements.
+#'
+#' Provides tools for conveniently manipulating and performing
+#' mathematical operations with timing variables (hrs, mins, secs).
+#'
+#' @import methods
+#' @docType package
+#' @name pkg-timing
+NULL
 

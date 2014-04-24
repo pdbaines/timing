@@ -1,4 +1,3 @@
-#' @docType package
 
 #' @export "check_timing"
 "check_timing" <- function(object) {
