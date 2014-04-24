@@ -1,8 +1,7 @@
-Basic class and operations for dealing with timing variables. 
+## Basic class and operations for dealing with timing variables. 
 
 For example, given measurements in seconds, the timing class will allow
 for easy conversion to hh:mm:ss. This is useful for converting fractional
 measurements into a neater format. 
 
-TODO:
 
